@@ -1,7 +1,9 @@
 package model
 
 type BaseResponse struct {
-	ErrMsg int
-	Msg    string
-	Data   map[string]interface{}
+	Status  int
+	Success string
+	Message string
+	Type    string
+	Data    interface{}
 }

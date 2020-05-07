@@ -3,8 +3,14 @@ package main
 import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/context"
+	"github.com/kataras/iris/mvc"
+	"github.com/kataras/iris/sessions"
 	"iris-test-project/CmsProject/config"
+	"iris-test-project/CmsProject/controller"
+	"iris-test-project/CmsProject/datasource"
 	"iris-test-project/CmsProject/model"
+	"iris-test-project/CmsProject/service"
+	"time"
 )
 
 func main() {
@@ -55,22 +61,44 @@ func configuration(app *iris.Application) {
 	//404
 	app.OnErrorCode(iris.StatusNotFound, func(c context.Context) {
 		c.JSON(model.BaseResponse{
-			ErrMsg: iris.StatusNotFound,
-			Msg:    " not found",
-			Data:   iris.Map{},
+			Status:  iris.StatusNotFound,
+			Message: " not found",
+			Data:    iris.Map{},
 		})
 	})
 
 	// 500
 	app.OnErrorCode(iris.StatusInternalServerError, func(c context.Context) {
 		c.JSON(model.BaseResponse{
-			ErrMsg: iris.StatusInternalServerError,
-			Msg:    " internal error ",
-			Data:   iris.Map{},
+			Status:  iris.StatusInternalServerError,
+			Message: " internal error ",
+			Data:    iris.Map{},
 		})
 	})
 }
 
 func mvcHandler(app *iris.Application) {
+
+	// 创建 session
+	sessManager := sessions.New(sessions.Config{
+		Cookie:  "sessionCookie",
+		Expires: 1 * time.Hour,
+	})
+
+	sqlEngine := datasource.NewMysqlEngine()
+
+	//管理员模板功能
+	adminService := service.NewAdminService(sqlEngine)
+	adminGroup := mvc.New(app.Party("/admin"))
+
+	// 两种方式将控制器需要的参数传入
+	//adminGroup.Handle(&controller.AdminController{Service: adminService, Sessions: sessManager, Logger: app.Logger()})
+
+	adminGroup.Register(
+		adminService,
+		sessManager,
+		app.Logger(),
+	)
+	adminGroup.Handle(new(controller.AdminController))
 
 }
