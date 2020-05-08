@@ -41,6 +41,7 @@ func newApp() *iris.Application {
 
 	// 注册静态资源
 	app.StaticWeb("/static", "./static")
+	app.StaticWeb("/img", "./static/img")
 	app.StaticWeb("/manage/static", "./static")
 
 	// 注册视图文件
@@ -93,12 +94,21 @@ func mvcHandler(app *iris.Application) {
 
 	// 两种方式将控制器需要的参数传入
 	//adminGroup.Handle(&controller.AdminController{Service: adminService, Sessions: sessManager, Logger: app.Logger()})
-
 	adminGroup.Register(
 		adminService,
 		sessManager,
 		app.Logger(),
 	)
 	adminGroup.Handle(new(controller.AdminController))
+
+	// 统计功能模块
+	staticService := service.NewStaticService(sqlEngine)
+	staticGroup := mvc.New(app.Party("/statis/{model}/{date}/"))
+	staticGroup.Register(
+		staticService,
+		sessManager,
+		app.Logger(),
+	)
+	staticGroup.Handle(new(controller.StaticController))
 
 }

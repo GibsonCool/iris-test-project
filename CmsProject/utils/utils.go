@@ -14,6 +14,9 @@ const (
 	RECODE_OK      = 1  //请求成功 正常
 	RECODE_FAIL    = 0  //失败
 	RECODE_UNLOGIN = -1 //未登录 没有权限
+
+	FormatTimeStr = "2006-01-02 15:04:05"
+	FormatDateStr = "2006-01-02"
 )
 
 //业务逻辑状态码
