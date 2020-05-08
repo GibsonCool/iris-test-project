@@ -21,7 +21,7 @@ type staticService struct {
 	Engine *xorm.Engine
 }
 
-func (s staticService) InitDate(date string) (string, string, error) {
+func (s *staticService) InitDate(date string) (string, string, error) {
 	if date == "NaN-NaN-NaN" {
 		date = time.Now().Format(utils.FormatDateStr)
 	}
@@ -37,7 +37,7 @@ func (s staticService) InitDate(date string) (string, string, error) {
 }
 
 // 查询某一日用户增长数量
-func (s staticService) GetUserDailyCount(date string) int64 {
+func (s *staticService) GetUserDailyCount(date string) int64 {
 	startDate, endDate, err := s.InitDate(date)
 	if err != nil {
 		return 0
@@ -56,7 +56,7 @@ func (s staticService) GetUserDailyCount(date string) int64 {
 }
 
 // 查询某一日订单增长数量
-func (s staticService) GetOrderDailyCount(date string) int64 {
+func (s *staticService) GetOrderDailyCount(date string) int64 {
 	startDate, endDate, err := s.InitDate(date)
 	if err != nil {
 		return 0
@@ -74,7 +74,7 @@ func (s staticService) GetOrderDailyCount(date string) int64 {
 }
 
 // 查询某一日管理员增长数量
-func (s staticService) GetAdminDailyCount(date string) int64 {
+func (s *staticService) GetAdminDailyCount(date string) int64 {
 	//查询日期date格式解析
 	startDate, endDate, err := s.InitDate(date)
 	if err != nil {

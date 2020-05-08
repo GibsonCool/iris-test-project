@@ -111,4 +111,23 @@ func mvcHandler(app *iris.Application) {
 	)
 	staticGroup.Handle(new(controller.StaticController))
 
+	// 订单功能模块
+	orderService := service.NewOrderService(sqlEngine)
+	orderGroup := mvc.New(app.Party("/bos/orders/"))
+	orderGroup.Register(
+		orderService,
+		sessManager,
+		app.Logger(),
+	)
+	orderGroup.Handle(new(controller.OrderController))
+
+	// 用户功能模块
+	userService := service.NewUserService(sqlEngine)
+	userGroup := mvc.New(app.Party("/v1/users/"))
+	userGroup.Register(
+		userService,
+		sessManager,
+		app.Logger(),
+	)
+	userGroup.Handle(new(controller.UserController))
 }

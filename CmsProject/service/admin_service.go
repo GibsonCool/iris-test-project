@@ -21,13 +21,13 @@ type adminService struct {
 	engine *xorm.Engine
 }
 
-func (a adminService) VerifyUser(userName, pwd string) (model.Admin, bool) {
+func (a *adminService) VerifyUser(userName, pwd string) (model.Admin, bool) {
 	var admin model.Admin
 	a.engine.Where("admin_name = ? and pwd = ?", userName, pwd).Get(&admin)
 	return admin, admin.AdminId != 0
 }
 
-func (a adminService) GetAdminCount() (int64, error) {
+func (a *adminService) GetAdminCount() (int64, error) {
 	count, err := a.engine.Count(new(model.Admin))
 	if err != nil {
 		panic(err.Error())
