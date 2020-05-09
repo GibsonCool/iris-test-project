@@ -5,7 +5,6 @@ import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
 	"github.com/kataras/iris/sessions"
-	"iris-test-project/CmsProject/model"
 	"iris-test-project/CmsProject/service"
 	"iris-test-project/CmsProject/utils"
 )
@@ -80,9 +79,8 @@ func (ac *AdminController) PostLogin(c iris.Context) mvc.Result {
 // url:   /admin/info
 // type:  get
 func (ac *AdminController) GetInfo(c iris.Context) mvc.Result {
-	userByte := ac.Sessions.Start(c).GetString(ADMIN)
-
-	if userByte == "" {
+	admin := ac.Sessions.Start(c).Get(ADMIN)
+	if admin == nil {
 		return mvc.Response{
 			Object: map[string]interface{}{
 				"status":  utils.RECODE_UNLOGIN,
@@ -91,28 +89,11 @@ func (ac *AdminController) GetInfo(c iris.Context) mvc.Result {
 			},
 		}
 	}
-
-	admin := model.Admin{}
-
-	// 调用session的内部提供的反序列化
-	err := sessions.DefaultTranscoder.Unmarshal([]byte(userByte), &admin)
-	//解析失败
-	if err != nil {
-		ac.Logger.Info(err.Error())
-		return mvc.Response{
-			Object: map[string]interface{}{
-				"status":  utils.RECODE_UNLOGIN,
-				"type":    utils.EEROR_UNLOGIN,
-				"message": utils.Recode2Text(utils.EEROR_UNLOGIN),
-			},
-		}
-	}
-
 	//解析成功
 	return mvc.Response{
 		Object: map[string]interface{}{
 			"status": utils.RECODE_OK,
-			"data":   admin.AdminToRespDesc(),
+			"data":   admin,
 		},
 	}
 }
