@@ -22,7 +22,12 @@ func NewMysqlEngine() *xorm.Engine {
 		new(model.Admin),
 		new(model.AdminPermission),
 		new(model.User),
-		new(model.UserOrder))
+		new(model.UserOrder),
+		new(model.Address),
+		new(model.Shop),
+		new(model.OrderStatus),
+		new(model.FoodCategory),
+	)
 
 	if err != nil {
 		panic(err.Error())
