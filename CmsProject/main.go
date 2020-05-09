@@ -85,7 +85,12 @@ func mvcHandler(app *iris.Application) {
 		Cookie:  "sessionCookie",
 		Expires: 1 * time.Hour,
 	})
+	// 获取 redis 实例
+	redis := datasource.NewRedis()
+	// 设置 session 使用 redis 来保存信息
+	sessManager.UseDatabase(redis)
 
+	// 获取数据库实例
 	sqlEngine := datasource.NewMysqlEngine()
 
 	//管理员模板功能

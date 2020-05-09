@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"github.com/kataras/golog"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/mvc"
@@ -64,8 +63,8 @@ func (ac *AdminController) PostLogin(c iris.Context) mvc.Result {
 	}
 
 	// 校验通过，设置session
-	userByte, _ := json.Marshal(admin)
-	ac.Sessions.Start(c).Set(ADMIN, userByte)
+	//userByte, _ := json.Marshal(admin)  内部会判断并且调用 sessions.DefaultTranscoder.Marshal 序列化，所以这里就不用自己序列一次了
+	ac.Sessions.Start(c).Set(ADMIN, admin)
 
 	return mvc.Response{
 		Object: map[string]interface{}{
@@ -81,9 +80,9 @@ func (ac *AdminController) PostLogin(c iris.Context) mvc.Result {
 // url:   /admin/info
 // type:  get
 func (ac *AdminController) GetInfo(c iris.Context) mvc.Result {
-	userByte := ac.Sessions.Start(c).Get(ADMIN)
+	userByte := ac.Sessions.Start(c).GetString(ADMIN)
 
-	if userByte == nil {
+	if userByte == "" {
 		return mvc.Response{
 			Object: map[string]interface{}{
 				"status":  utils.RECODE_UNLOGIN,
@@ -94,9 +93,12 @@ func (ac *AdminController) GetInfo(c iris.Context) mvc.Result {
 	}
 
 	admin := model.Admin{}
-	err := json.Unmarshal(userByte.([]byte), &admin)
+
+	// 调用session的内部提供的反序列化
+	err := sessions.DefaultTranscoder.Unmarshal([]byte(userByte), &admin)
 	//解析失败
 	if err != nil {
+		ac.Logger.Info(err.Error())
 		return mvc.Response{
 			Object: map[string]interface{}{
 				"status":  utils.RECODE_UNLOGIN,

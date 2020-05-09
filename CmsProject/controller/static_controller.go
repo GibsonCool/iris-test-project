@@ -20,6 +20,12 @@ type StaticController struct {
 	Logger *golog.Logger
 }
 
+var (
+	ADMINMODULE = "ADMIN_"
+	USERMODULE  = "USER_"
+	ORDERMODULE = "ORDER_"
+)
+
 // 解析路由统计功能请求
 // url:  static/{model}/{date}/count
 // type: get
@@ -46,13 +52,58 @@ func (sc *StaticController) GetCount(c iris.Context) mvc.Result {
 	date := c.Params().Get("date")
 
 	var result int64
+	session := sc.Sessions.Start(c)
 	switch model {
 	case "user":
-		result = sc.Service.GetUserDailyCount(date)
+		keyName := USERMODULE + date
+		// 先从缓存中取，如果有则直接返回
+		result := session.Get(keyName)
+		if result != nil {
+			result := result.(float64)
+			return mvc.Response{
+				Object: map[string]interface{}{
+					"status": utils.RECODE_OK,
+					"count":  result,
+				},
+			}
+		} else {
+			// 通过业务层从 DB 查询获取
+			result = sc.Service.GetUserDailyCount(date)
+			// 将数据设置缓存到 session 中。由于 session 在 main 中使用的 Redis 作为存储，所以数据会直接通过 redis 来缓存
+			session.Set(keyName, result)
+		}
 	case "order":
-		result = sc.Service.GetOrderDailyCount(date)
+		keyName := ORDERMODULE + date
+		// 先从缓存中取，如果有则直接返回
+		result := session.Get(keyName)
+		if result != nil {
+			result := result.(float64)
+			return mvc.Response{
+				Object: map[string]interface{}{
+					"status": utils.RECODE_OK,
+					"count":  result,
+				},
+			}
+		} else {
+			result = sc.Service.GetOrderDailyCount(date)
+			session.Set(keyName, result)
+		}
 	case "admin":
-		result = sc.Service.GetAdminDailyCount(date)
+		keyName := ADMINMODULE + date
+		// 先从缓存中取，如果有则直接返回
+		result := session.Get(keyName)
+		if result != nil {
+			result := result.(float64)
+			return mvc.Response{
+				Object: map[string]interface{}{
+					"status": utils.RECODE_OK,
+					"count":  result,
+				},
+			}
+		} else {
+			result = sc.Service.GetAdminDailyCount(date)
+			session.Set(keyName, result)
+		}
 	}
 
 	// TODO： 测试数据返回随机数
